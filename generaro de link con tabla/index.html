@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WhatsApp Link Generator</title>
+  <!-- Agrega la siguiente línea para incluir Font Awesome (versión 6) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" crossorigin="anonymous" />
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="container">
+  <div class="section">
+    <label for="countryCode">ingresa código de Pais:</label>
+    <input type="number" id="countryCode" placeholder="Código" min="1"  inputmode="numeric">
+    
+    <label for="phoneNumber">Ingresa el número de móvil:</label>
+    <input type="tel" id="phoneNumber" placeholder="Número" pattern="[0-9]{1,}">
+  </div>
+
+  <!-- <div class="section">
+    <label for="messageSelect">Selecciona un mensaje:</label>
+    <select id="messageSelect">
+      <option value="Selecciona mensaje">Selecciona</option>
+      <option value="Me interesa">Me interesa</option>
+      <option value="Quiero adquirir un">Quiero adquirir un</option>
+      <option value="Quiero adquirir una">Quiero adquirir una</option>
+      <option value="Me gustaría">Me gustaría</option>
+    </select>
+  </div> -->
+  <div class="section">
+    <label for="messageSelect">¿Cómo quieres iniciar un el mensaje?:</label>
+    <select id="messageSelect">
+      <option value="Selecciona mensaje" disabled selected>Selecciona inicio de mensaje</option>
+      <option value="Me interesa">Me interesa</option>
+      <option value="Quiero adquirir un">Quiero adquirir un</option>
+      <option value="Quiero adquirir una">Quiero adquirir una</option>
+      <option value="Me gustaría">Me gustaría</option>
+    </select>
+  </div>
+
+  <div class="section">
+    <table id="productTable">
+      <thead>
+        <tr>
+          <th>Ingresa título</th>
+          <th>Ingresa producto o servicio</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><input type="text" placeholder="Ingresa título"></td>
+          <td><input type="text" placeholder="Ingresa producto o servicio"></td>
+        </tr>
+      </tbody>
+    </table>
+
+    
+  
+    <button onclick="addRow()">Agregar otra fila</button>
+    <button onclick="deleteRow()">Eliminar fila</button>
+    <button onclick="verifyAndGenerateLink()">Verificar</button>
+  </div>
+
+  <div id="result" class="result"></div>
+  <button class="download-btn" onclick="downloadTxtFile()">Descargar</button>
+  <button onclick="startOver()">Comenzar de Nuevo</button>
+</div>
+
+<script src="scriptcorre.js"></script>
+
+</body>
+</html>

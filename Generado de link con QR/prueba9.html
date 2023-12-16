@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WhatsApp Link Generator</title>
+  <!-- Agrega la siguiente línea para incluir Font Awesome (versión 6) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha256-BcP6d6HbuYrYGF6qMhxpYo0USwlE+0FfZOzIb7fKUm0=" crossorigin="anonymous" />
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #f8f8f8;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .container {
+      max-width: 600px;
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .section {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    input, select, button {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 10px;
+      box-sizing: border-box;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 10px;
+    }
+
+    table, th, td {
+      border: 1px solid #ddd;
+    }
+
+    th, td {
+      padding: 10px;
+      text-align: left;
+    }
+
+    th {
+      background-color: #f2f2f2;
+    }
+
+    button {
+      background-color: #4caf50;
+      color: white;
+      border: none;
+      padding: 10px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+
+    .result {
+      background-color: #f2f2f2;
+      padding: 15px;
+      border-radius: 4px;
+      display: none;
+    }
+
+    .result table {
+      background-color: #fff;
+    }
+
+    .download-btn {
+      background-color: #008CBA;
+      color: #fff;
+      padding: 10px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      display: block;
+      margin-top: 10px;
+    }
+
+    .download-btn:hover {
+      background-color: #006699;
+    }
+
+    .copy-btn {
+      background-color: #008CBA;
+      color: #fff;
+      border: none;
+      padding: 5px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      display: inline-block;
+    }
+
+    .copy-btn:hover {
+      background-color: #006699;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div class="section">
+    <label for="countryCode">Código de país:</label>
+    <input type="number" id="countryCode" placeholder="Código" min="1">
+    
+    <label for="phoneNumber">Número de teléfono:</label>
+    <input type="tel" id="phoneNumber" placeholder="Número" pattern="[0-9]{1,}">
+  </div>
+
+  <div class="section">
+    <label for="messageSelect">Selecciona un mensaje:</label>
+    <select id="messageSelect">
+      <option value="Hola estoy interesado en">Hola estoy interesado en</option>
+      <option value="Me interesa">Me interesa</option>
+      <option value="Quiero adquirir un">Quiero adquirir un</option>
+      <option value="Quiero adquirir una">Quiero adquirir una</option>
+      <option value="Me gustaría">Me gustaría</option>
+    </select>
+  </div>
+
+  <div class="section">
+    <table id="productTable">
+      <thead>
+        <tr>
+          <th>Ingresa título</th>
+          <th>Ingresa producto o servicio</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><input type="text" placeholder="Ingresa título"></td>
+          <td><input type="text" placeholder="Ingresa producto o servicio"></td>
+        </tr>
+      </tbody>
+    </table>
+    <button onclick="addRow()">Agregar otra fila</button>
+    <button onclick="verifyAndGenerateLink()">Verificar</button>
+  </div>
+
+  <div id="result" class="result"></div>
+  <button class="download-btn" onclick="downloadTxtFile()">Descargar</button>
+
+</div>
+
+<script>
+  var countryCode, phoneNumber, selectedMessage;
+
+  function addRow() {
+    var table = document.getElementById("productTable").getElementsByTagName('tbody')[0];
+    var newRow = table.insertRow(table.rows.length);
+    var cell1 = newRow.insertCell(0);
+    var cell2 = newRow.insertCell(1);
+    cell1.innerHTML = '<input type="text" placeholder="Ingresa título">';
+    cell2.innerHTML = '<input type="text" placeholder="Ingresa producto o servicio">';
+  }
+
+  function verifyAndGenerateLink() {
+    // Obtener valores
+    countryCode = document.getElementById("countryCode").value;
+    phoneNumber = document.getElementById("phoneNumber").value;
+    selectedMessage = document.getElementById("messageSelect").value;
+
+    // Construir link de WhatsApp
+    var whatsappLink = "https://wa.me/" + countryCode + phoneNumber + "?text=" + encodeURIComponent(selectedMessage);
+
+    // Construir resultado
+    var resultContainer = document.getElementById("result");
+    resultContainer.innerHTML = "<h2>Resultado:</h2>";
+    var table = "<table><thead><tr><th>Título</th><th>Texto</th><th>Enlace</th><th>Copiar</th></tr></thead><tbody>";
+
+    // Iterar sobre filas de la tabla
+    var productTable = document.getElementById("productTable").getElementsByTagName('tbody')[0];
+    for (var i = 0; i < productTable.rows.length; i++) {
+      var title = productTable.rows[i].cells[0].getElementsByTagName('input')[0].value;
+      var text = productTable.rows[i].cells[1].getElementsByTagName('input')[0].value;
+
+      // Agregar fila al resultado
+      table += "<tr><td>" + title + "</td><td>" + text + "</td><td><span id='link" + i + "'>" + whatsappLink + title + " " + text + "</span></td><td><button class='copy-btn' onclick='copyLink(" + i + ")'><i class='fas fa-link'></i></button></td></tr>";
+    }
+
+    table += "</tbody></table>";
+    resultContainer.innerHTML += table;
+    resultContainer.style.display = "block";
+  }
+
+  function copyLink(rowNumber) {
+    var linkSpan = document.getElementById("link" + rowNumber);
+    var dummy = document.createElement("textarea");
+    document.body.appendChild(dummy);
+    dummy.value = linkSpan.innerText;
+    dummy.select();
+    document.execCommand("copy");
+    document.body.removeChild(dummy);
+    alert("Enlace copiado al portapapeles");
+  }
+
+  function downloadTxtFile() {
+    var resultTable = document.getElementById("result").getElementsByTagName('table')[0];
+    var rows = resultTable.rows;
+    var content = "";
+
+    for (var i = 0; i < rows.length; i++) {
+      content += rows[i].cells[0].innerText + ": " + rows[i].cells[2].innerText + "\n";
+    }
+
+    var blob = new Blob([content], { type: "text/plain" });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url;
+    a.download = "whatsapp_links.txt";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }
+</script>
+
+</body>
+</html>

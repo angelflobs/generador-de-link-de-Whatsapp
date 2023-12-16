@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generador de Enlaces de WhatsApp</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        input {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 12px;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        .message-container {
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+
+        .message-container button {
+            margin-left: 10px;
+        }
+
+        .link-button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 20px;
+            padding: 0;
+            margin: 0;
+            color: #007BFF;
+        }
+
+        #result {
+            margin-top: 20px;
+            display: none;
+        }
+
+        #qrcode-container {
+            margin-top: 10px;
+            text-align: center;
+        }
+
+        #qrcode {
+            width: 100px;
+            height: 100px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Generador de Enlaces de WhatsApp</h1>
+
+    <label for="phoneNumber">Número de Teléfono:</label>
+    <input type="text" id="phoneNumber" placeholder="Ingrese el número de teléfono" oninput="validateNumberInput(this)">
+
+    <label for="title">Título:</label>
+    <input type="text" id="title" placeholder="Ingrese el título del mensaje">
+
+    <label for="message">Mensaje:</label>
+    <input type="text" id="message" placeholder="Ingrese el mensaje">
+
+    <button onclick="addMessage()">Agregar Mensaje</button>
+    <button onclick="resetData()">Limpiar Datos</button>
+    <button onclick="generateLinks()">Generar Enlaces</button>
+
+    <div id="messagesContainer"></div>
+
+    <div id="result">
+        <label for="generatedLinks">Enlaces Generados:</label>
+        <div id="generatedLinks"></div>
+        <button onclick="downloadTxt()">Descargar Todo como TXT</button>
+        <button onclick="downloadPdf()">Descargar Todo como PDF</button>
+        <div id="qrcode-container">
+            <p>QR Code:</p>
+            <div id="qrcode"></div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+    <script src="https://cdn.rawgit.com/eKoopmans/html2pdf/0.9.3/dist/html2pdf.bundle.js"></script>
+    <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
+    <script>
+        var messages = [];
+        var pdf = null;
+
+        function addMessage() {
+            var phoneNumberInput = document.getElementById("phoneNumber");
+            var titleInput = document.getElementById("title");
+            var titleValue = titleInput.value.trim();
+            var messageInput = document.getElementById("message");
+            var messageValue = messageInput.value.trim();
+
+            if (messageValue !== "" && titleValue !== "") {
+                messages.push({ title: titleValue, message: messageValue });
+                titleInput.value = "";
+                messageInput.value = "";
+                updateMessagesContainer();
+            }
+        }
+
+        function updateMessagesContainer() {
+            var messagesContainer = document.getElementById("messagesContainer");
+            messagesContainer.innerHTML = "";
+
+            messages.forEach(function (message, index) {
+                var messageDiv = document.createElement("div");
+                messageDiv.className = "message-container";
+                messageDiv.innerHTML = `<p><strong>${message.title}</strong></p><p>${message.message}</p>`;
+
+                var linkButton = document.createElement("button");
+                linkButton.className = "link-button";
+                linkButton.innerHTML = "🔗";
+                linkButton.onclick = function () {
+                    copyToClipboard(`https://wa.me/${encodeURIComponent(document.getElementById("phoneNumber").value)}?text=${encodeURIComponent(message.message)}`);
+                };
+
+                var deleteButton = document.createElement("button");
+                deleteButton.textContent = "Eliminar";
+                deleteButton.onclick = function () {
+                    messages.splice(index, 1);
+                    updateMessagesContainer();
+                };
+
+                messageDiv.appendChild(linkButton);
+                messageDiv.appendChild(deleteButton);
+                messagesContainer.appendChild(messageDiv);
+            });
+        }
+
+        function generateLinks() {
+            var phoneNumber = encodeURIComponent(document.getElementById("phoneNumber").value);
+            var generatedLinksContainer = document.getElementById("generatedLinks");
+            generatedLinksContainer.innerHTML = "";
+
+            messages.forEach(function (message, index) {
+                var messageLink = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message.message)}`;
+                var linkDiv = document.createElement("div");
+                linkDiv.innerHTML = `<p><strong>${message.title}</strong></p><p>${messageLink}</p>`;
+                generatedLinksContainer.appendChild(linkDiv);
+            });
+
+            // Actualizar QR Code
+            updateQRCode();
+            
+            document.getElementById("result").style.display = "block";
+        }
+
+        function downloadTxt() {
+            var txtContent = "";
+            messages.forEach(function (message, index) {
+                var phoneNumber = encodeURIComponent(document.getElementById("phoneNumber").value);
+                var messageLink = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message.message)}`;
+                txtContent += `${message.title}\n${messageLink}\n\n`;
+            });
+
+            var blob = new Blob([txtContent], { type: "text/plain" });
+            var url = window.URL.createObjectURL(blob);
+            var a = document.createElement("a");
+            a.href = url;
+            a.download = "mensajes_y_enlaces.txt";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+
+        function downloadPdf() {
+            var pdfContent = "";
+            messages.forEach(function (message, index) {
+                var phoneNumber = encodeURIComponent(document.getElementById("phoneNumber").value);
+                var messageLink = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message.message)}`;
+                pdfContent += `${message.title}\n${messageLink}\n\n`;
+            });
+
+            var pdfOptions = {
+                margin: 10,
+                filename: "mensajes_y_enlaces.pdf",
+                image: { type: "jpeg", quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: "mm", format: "a4", orientation: "portrait" }
+            };
+
+            if (pdfContent !== "") {
+                html2pdf().from(pdfContent).set(pdfOptions).outputPdf().then(function (output) {
+                    pdf = new jsPDF();
+                    pdf.output("datauristring").then(function (data) {
+                        downloadFile(data, pdfOptions.filename, "application/pdf");
+                    });
+                });
+            } else {
+                console.error('No hay mensajes para generar el PDF.');
+            }
+        }
+
+        function validateNumberInput(input) {
+            // Permitir solo números y mostrar un mensaje si se ingresan otros caracteres
+            input.value = input.value.replace(/[^\d]/g, "");
+            if (input.value === "") {
+                input.setCustomValidity("Ingrese solo números.");
+            } else {
+                input.setCustomValidity("");
+            }
+        }
+
+        function resetData() {
+            // Limpiar los datos generados, incluyendo los mensajes
+            document.getElementById("phoneNumber").value = "";
+            document.getElementById("title").value = "";
+            document.getElementById("message").value = "";
+            document.getElementById("result").style.display = "none";
+            messages = [];  // Limpiar mensajes al restablecer datos
+            updateMessagesContainer();
+        }
+
+        function copyToClipboard(text) {
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand("Copy");
+            document.body.removeChild(textArea);
+        }
+
+        function downloadFile(data, filename, type) {
+            var blob = new Blob([data], { type: type });
+            var url = window.URL.createObjectURL(blob);
+            var a = document.createElement("a");
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+
+        function generateQRCode(message, container) {
+            var qr = new QRCode(container, {
+                text: message,
+                width: 128,
+                height: 128
+            });
+        }
+
+        function updateQRCode() {
+            var qrContainer = document.getElementById("qrcode");
+            var phoneNumber = encodeURIComponent(document.getElementById("phoneNumber").value);
+
+            if (messages.length > 0) {
+                var firstMessage = messages[0];
+                var messageLink = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(firstMessage.message)}`;
+                generateQRCode(messageLink, qrContainer);
+            } else {
+                qrContainer.innerHTML = "";  // Limpiar QR Code si no hay mensajes
+            }
+        }
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generador de Enlaces de WhatsApp</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        input {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 12px;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        .message-container {
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+
+        .message-container button {
+            margin-left: 10px;
+        }
+
+        #result {
+            margin-top: 20px;
+            display: none;
+        }
+
+        #qrcodes-container {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+
+        .qrcode {
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Generador de Enlaces de WhatsApp</h1>
+
+    <label for="phoneNumber">Número de Teléfono:</label>
+    <input type="text" id="phoneNumber" placeholder="Ingrese el número de teléfono">
+
+    <label for="title">Título:</label>
+    <input type="text" id="title" placeholder="Ingrese el título">
+
+    <label for="message">Mensaje:</label>
+    <input type="text" id="message" placeholder="Ingrese el mensaje">
+
+    <button onclick="addMessage()">Agregar Mensaje</button>
+
+    <button onclick="generateLinks()">Generar Enlaces</button>
+
+    <div id="messagesContainer"></div>
+
+    <div id="result">
+        <label for="generatedLinks">Enlaces Generados:</label>
+        <div id="generatedLinks"></div>
+        <button onclick="downloadTxt()">Descargar Todo como TXT</button>
+        
+        <div id="qrcodes-container"></div>
+
+        <div id="pdf-container"></div>
+        <button onclick="downloadPdf()">Descargar Todo como PDF</button>
+    </div>
+
+    <script>
+        var messages = [];
+
+        function addMessage() {
+            var phoneNumberInput = document.getElementById("phoneNumber");
+            var titleInput = document.getElementById("title");
+            var titleValue = titleInput.value.trim();
+            var messageInput = document.getElementById("message");
+            var messageValue = messageInput.value.trim();
+
+            if (messageValue !== "" && titleValue !== "") {
+                messages.push({ title: titleValue, message: messageValue });
+                titleInput.value = "";
+                messageInput.value = "";
+                updateMessagesContainer();
+            }
+        }
+
+        function updateMessagesContainer() {
+            var messagesContainer = document.getElementById("messagesContainer");
+            messagesContainer.innerHTML = "";
+
+            messages.forEach(function (message, index) {
+                var messageDiv = document.createElement("div");
+                messageDiv.className = "message-container";
+                messageDiv.innerHTML = `<p><strong>${message.title}</strong></p><p>${message.message}</p>`;
+
+                var linkButton = document.createElement("button");
+                linkButton.className = "link-button";
+                linkButton.innerHTML = "🔗";
+                linkButton.onclick = function () {
+                    copyToClipboard(`https://wa.me/${encodeURIComponent(document.getElementById("phoneNumber").value)}?text=${encodeURIComponent(message.message)}`);
+                };
+
+                var deleteButton = document.createElement("button");
+                deleteButton.textContent = "Eliminar";
+                deleteButton.onclick = function () {
+                    messages.splice(index, 1);
+                    updateMessagesContainer();
+                };
+
+                messageDiv.appendChild(linkButton);
+                messageDiv.appendChild(deleteButton);
+                messagesContainer.appendChild(messageDiv);
+            });
+        }
+
+        function generateLinks() {
+            var phoneNumber = encodeURIComponent(document.getElementById("phoneNumber").value);
+            var generatedLinksContainer = document.getElementById("generatedLinks");
+            generatedLinksContainer.innerHTML = "";
+
+            var qrcodesContainer = document.getElementById("qrcodes-container");
+            qrcodesContainer.innerHTML = "";
+
+            messages.forEach(function (message, index) {
+                var messageLink = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message.message)}`;
+                var linkDiv = document.createElement("div");
+                linkDiv.innerHTML = `<p><strong>${message.title}</strong></p><p>${messageLink}</p>`;
+                generatedLinksContainer.appendChild(linkDiv);
+
+                var qrcodeDiv = document.createElement("div");
+                qrcodeDiv.className = "qrcode";
+                qrcodeDiv.id = `qrcode-${index}`;
+                qrcodesContainer.appendChild(qrcodeDiv);
+                generateQRCode(messageLink, `qrcode-${index}`);
+            });
+
+            updatePdfContent();
+            document.getElementById("result").style.display = "block";
+        }
+
+        function downloadTxt() {
+            var txtContent = "";
+            messages.forEach(function (message, index) {
+                var phoneNumber = encodeURIComponent(document.getElementById("phoneNumber").value);
+                var messageLink = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message.message)}`;
+                txtContent += `${message.title}\n${messageLink}\n\n`;
+            });
+
+            var blob = new Blob([txtContent], { type: "text/plain" });
+            var url = window.URL.createObjectURL(blob);
+            var a = document.createElement("a");
+            a.href = url;
+            a.download = "mensajes_y_enlaces.txt";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+
+        function downloadPdf() {
+            var pdfContent = document.getElementById("pdf-container").innerHTML;
+
+            var pdfOptions = {
+                filename: "mensajes_y_enlaces.pdf",
+                margin: { top: 10, right: 10, bottom: 10, left: 10 },
+                jsPDF: { unit: "mm", format: "a4", orientation: "portrait" }
+            };
+
+            if (pdfContent !== "") {
+                html2pdf().from(pdfContent).set(pdfOptions).outputPdf().then(function (output) {
+                    var pdf = new jsPDF();
+                    pdf.output("datauristring").then(function (data) {
+                        downloadFile(data, pdfOptions.filename, "application/pdf");
+                    });
+                });
+            } else {
+                console.error('No hay mensajes para generar el PDF.');
+            }
+        }
+
+        function validateNumberInput(input) {
+            // Permitir solo números y mostrar un mensaje si se ingresan otros caracteres
+            input.value = input.value.replace(/[^\d]/g, "");
+            if (input.value === "") {
+                input.setCustomValidity("Ingrese solo números.");
+            } else {
+                input.setCustomValidity("");
+            }
+        }
+
+        function resetData() {
+            // Limpiar los datos generados, incluyendo los mensajes
+            document.getElementById("phoneNumber").value = "";
+            document.getElementById("title").value = "";
+            document.getElementById("message").value = "";
+            document.getElementById("result").style.display = "none";
+            messages = [];  // Limpiar mensajes al restablecer datos
+            updateMessagesContainer();
+        }
+
+        function copyToClipboard(text) {
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand("Copy");
+            document.body.removeChild(textArea);
+        }
+
+        function generateQRCode(message, containerId) {
+            // Función para generar QR Code
+            var qr = new QRCode(document.getElementById(containerId), {
+                text: message,
+                width: 100,
+                height: 100
+            });
+        }
+
+        function downloadQR(index) {
+            // Función para descargar QR Code en formato PNG
+            var qrContainer = document.getElementById(`qrcode-${index}`);
+            var svgData = qrContainer.querySelector("svg").outerHTML;
+
+            var canvas = document.createElement("canvas");
+            canvas.width = 100;
+            canvas.height = 100;
+            var img = new Image();
+            img.src = "data:image/svg+xml," + encodeURIComponent(svgData);
+
+            img.onload = function () {
+                canvas.getContext("2d").drawImage(img, 0, 0);
+                var dataUrl = canvas.toDataURL("image/png");
+                downloadFile(dataUrl, `qrcode_${index}.png`, "image/png");
+            };
+        }
+
+        function updatePdfContent() {
+            // Función para actualizar el contenido del PDF
+            var pdfContainer = document.getElementById("pdf-container");
+            pdfContainer.innerHTML = "";
+
+            messages.forEach(function (message, index) {
+                var phoneNumber = encodeURIComponent(document.getElementById("phoneNumber").value);
+                var messageLink = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message.message)}`;
+
+                var pdfContent = `
+                    <p><strong>${message.title}</strong></p>
+                    <p>${messageLink}</p>
+                    <br>
+                `;
+
+                pdfContainer.innerHTML += pdfContent;
+            });
+        }
+
+        function downloadFile(data, filename, type) {
+            var a = document.createElement("a");
+            var blob = dataURItoBlob(data, type);
+            var url = window.URL.createObjectURL(blob);
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+
+        function dataURItoBlob(dataURI, type) {
+            var byteString = atob(dataURI.split(",")[1]);
+            var arrayBuffer = new ArrayBuffer(byteString.length);
+            var int8Array = new Uint8Array(arrayBuffer);
+
+            for (var i = 0; i < byteString.length; i++) {
+                int8Array[i] = byteString.charCodeAt(i);
+            }
+
+            return new Blob([arrayBuffer], { type: type });
+        }
+    </script>
+
+</body>
+</html>

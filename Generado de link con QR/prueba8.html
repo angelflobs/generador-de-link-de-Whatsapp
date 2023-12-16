@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Generador de enlaces de WhatsApp</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+    }
+
+    #form-container {
+      max-width: 600px;
+      margin: 20px auto;
+    }
+
+    input {
+      width: calc(100% - 10px);
+      margin-bottom: 10px;
+      padding: 5px;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-bottom: 20px;
+    }
+
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+    }
+
+    th {
+      background-color: #f2f2f2;
+    }
+
+    #add-row-btn {
+      background-color: #4CAF50;
+      color: white;
+      padding: 10px;
+      border: none;
+      cursor: pointer;
+    }
+
+    #generate-btn {
+      background-color: #008CBA;
+      color: white;
+      padding: 10px;
+      border: none;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+<div id="form-container">
+  <label for="mobileNumber">Número móvil:</label>
+  <input type="text" id="mobileNumber" placeholder="Ingrese el número móvil">
+
+  <table id="productTable">
+    <thead>
+      <tr>
+        <th>Título</th>
+        <th>Producto</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td contenteditable="true">Venta de torta</td>
+        <td contenteditable="true">Torta de jamón</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <button id="add-row-btn" onclick="addRow()">Agregar otra fila</button>
+
+  <button id="generate-btn" onclick="generateLink()">Generar</button>
+</div>
+
+<script>
+  function addRow() {
+    var table = document.getElementById("productTable").getElementsByTagName('tbody')[0];
+    var newRow = table.insertRow(table.rows.length);
+    var titleCell = newRow.insertCell(0);
+    var productCell = newRow.insertCell(1);
+    titleCell.contentEditable = true;
+    productCell.contentEditable = true;
+  }
+
+  function generateLink() {
+    var mobileNumber = document.getElementById("mobileNumber").value;
+    var table = document.getElementById("productTable");
+    var rows = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+    var links = [];
+
+    for (var i = 0; i < rows.length; i++) {
+      var cells = rows[i].getElementsByTagName('td');
+      var title = cells[0].innerText.trim();
+      var product = cells[1].innerText.trim();
+      var linkContent = `Me interesa ${product}`;
+
+      // URL encode the message
+      var encodedMessage = encodeURIComponent(linkContent);
+
+      // Create WhatsApp link
+      var whatsappLink = `https://wa.me/${mobileNumber}?text=${encodedMessage}`;
+      
+      links.push(`${title}: ${whatsappLink}`);
+    }
+
+    // Create a Blob and download the links as a text file
+    var blob = new Blob([links.join('\n')], { type: 'text/plain' });
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'whatsapp_links.txt';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }
+</script>
+
+</body>
+</html>
+
+

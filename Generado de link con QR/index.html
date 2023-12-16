@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generador de Enlaces de WhatsApp</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+    <script src="https://cdn.rawgit.com/eKoopmans/html2pdf/0.9.3/dist/html2pdf.bundle.js"></script>
+    <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <h1>Generador de Enlaces de WhatsApp</h1>
+
+    <label for="phoneNumber">Número de Teléfono:</label>
+    <input type="tel" id="phoneNumber" placeholder="Ingrese el número de teléfono" oninput="validateNumberInput(this)">
+
+    <label for="title">Título del Mensaje:</label>
+    <input type="text" id="title" placeholder="Ingrese el título del mensaje">
+
+    <label for="message">Mensaje:</label>
+    <input type="text" id="message" placeholder="Ingrese el mensaje">
+
+    <button onclick="addMessage()">Agregar Mensaje</button>
+
+    <button onclick="generateLinks()">Generar Enlaces</button>
+
+    <button onclick="downloadTxt()">Descargar Todo como TXT</button>
+    <button onclick="downloadPdf()">Descargar Todo como PDF</button>
+
+    <div id="messagesContainer"></div>
+
+    <div id="result">
+        <label for="generatedLinks">Enlaces Generados:</label>
+        <div id="generatedLinks"></div>
+    </div>
+
+    <div id="qrcode-container"></div>
+
+    <script src="script.js"></script>
+</body>
+</html>
