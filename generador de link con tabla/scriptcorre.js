@@ -86,7 +86,7 @@ function verifyAndGenerateLink() {
     }
 
     // Construir enlace de WhatsApp
-    var whatsappLink = "https://wa.me/" + countryCode + phoneNumber + "?text=" + encodeURIComponent(selectedMessage + " " + title + " " + text);
+    var whatsappLink = "https://wa.me/" + countryCode + phoneNumber + "?text=" + encodeURIComponent(selectedMessage + " " + text);
 
     // Agregar fila al resultado
     table += "<tr><td>" + title + "</td><td>" + text + "</td><td><span id='link" + i + "'>" + whatsappLink + "</span></td><td><button class='copy-btn' onclick='copyLink(" + i + ")'><i class='fas fa-link'></i></button></td></tr>";

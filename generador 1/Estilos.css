@@ -1,0 +1,86 @@
+/* Estilos generales */
+body {
+    font-family: 'Arial', sans-serif;
+    margin: 20px;
+}
+
+/* Estilos para etiquetas */
+label {
+    display: block;
+    margin-bottom: 8px;
+}
+
+/* Estilos para campos de entrada */
+input {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc; /* Añadido borde para mayor claridad */
+    border-radius: 4px;
+    box-sizing: border-box; /* Evita que el ancho se extienda debido al padding y al borde */
+}
+
+/* Estilos para botones */
+button {
+    background-color: #4CAF50;
+    color: white;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-right: 10px;
+    transition: background-color 0.3s ease; /* Agregada transición para suavizar el cambio de color */
+}
+
+button:hover {
+    background-color: #45a049;
+}
+
+/* Estilos para el contenedor de mensajes */
+.message-container {
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+}
+
+.message-container button {
+    margin-left: 15px;
+}
+
+/* Estilos para botones de enlace */
+.link-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 18px; /* Reducido el tamaño para una apariencia más elegante */
+    margin: 0;
+    color: #007BFF;
+}
+
+/* Estilos para el resultado (inicialmente oculto) */
+#result {
+    margin-top: 20px;
+    display: none;
+}
+
+/* Estilos para dispositivos móviles */
+@media (max-width: 767px) {
+    body {
+        margin: 10px;
+    }
+
+    button {
+        width: 100%;
+        margin-right: 0;
+    }
+
+    .message-container {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .message-container button {
+        margin-top: 10px;
+        margin-left: 0;
+    }
+}
